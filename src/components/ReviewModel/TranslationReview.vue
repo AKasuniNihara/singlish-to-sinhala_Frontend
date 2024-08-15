@@ -46,7 +46,7 @@
                             <input v-model="comment" class="form-control mt-2" placeholder="Add a comment..." />
                         </div>
                         <div class="mt-3">
-                            <button class="btn btn-primary">Submit</button>
+                            <button class="btn btn-primary" @click="addGeneratedData">Submit</button>
                         </div>
                     </div>
                 </div>
@@ -57,12 +57,17 @@
 </template>
 
 <script>
+import ToastificationContent from '@/components/common/ToastificationContent.vue'
+import {
+    // getGeneratedData,
+    setGeneratedData
+} from '@/api/translationReview.api.js'
 export default {
     name: 'ReviewPage',
     data() {
         return {
             inputData: '',
-            translatedData: '', // Set this with your translation logic
+            translatedData: '_', // Set this with your translation logic
             review: null,
             comment: '',
             reviewMessage: 'Please provide your feedback',
@@ -75,12 +80,45 @@ export default {
                 this.reviewMessage = 'Please provide your feedback';
             } else {
                 this.review = type;
-                if(type === 'correct'){
+                if (type === 'correct') {
                     this.reviewMessage = "Generated sentence is correct"
-                }
-                else if(type === 'incorrect'){
+                } else if (type === 'incorrect') {
                     this.reviewMessage = "Generated sentence is incorrect"
                 }
+            }
+        },
+        async addGeneratedData() {
+            try {
+                const response = await setGeneratedData(
+                    this.inputData,
+                    this.translatedData,
+                    this.review,
+                    this.comment,
+                    "user1",
+                );
+                if (response.data.success) {
+                    this.$toast({
+                        component: ToastificationContent,
+                        props: {
+                            title: "Updated Successfully",
+                            icon: "XIcon",
+                            variant: "success",
+                        },
+                    });
+
+                } else {
+                    this.$toast({
+                        component: ToastificationContent,
+                        props: {
+                            title: "Failed to Update",
+                            icon: "XIcon",
+                            variant: "danger",
+                        },
+                    });
+
+                }
+            } catch (error) {
+                console.error('Error inserting generated data:', error);
             }
         }
     }
@@ -104,11 +142,14 @@ export default {
 }
 
 .review-section {
-  position: sticky;
-  top: 20px; /* Adjust as needed */
-  z-index: 1; /* Ensure it's above other content */
-  background-color: #fff; /* Optional: background to make it stand out */
-  padding: 10px;
-  border-radius: 5px;
+    position: sticky;
+    top: 20px;
+    /* Adjust as needed */
+    z-index: 1;
+    /* Ensure it's above other content */
+    background-color: #fff;
+    /* Optional: background to make it stand out */
+    padding: 10px;
+    border-radius: 5px;
 }
 </style>
